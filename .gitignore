@@ -3,4 +3,5 @@ node_modules
 config/database/*
 coverage
 .env
+.test.env
 .vscode

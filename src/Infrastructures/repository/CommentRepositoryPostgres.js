@@ -43,6 +43,24 @@ class CommentRepositoryPostgres extends CommentRepository {
     }
   }
 
+  async getCommentById(commentId) {
+    const query = {
+      text: `SELECT comments.*, users.username
+             FROM comments
+             LEFT JOIN users ON users.id=comments.owner
+             WHERE comments.id=$1`,
+      values: [commentId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) {
+      throw new NotFoundError('comment ID tidak valid');
+    }
+
+    return new PostedComment(Mapper.mapComment({ ...result.rows[0] }));
+  }
+
   async getCommentsByThreadId(threadId) {
     const query = {
       text: `SELECT comments.*, users.username

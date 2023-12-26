@@ -26,7 +26,7 @@ describe('DeleteReplyUseCase', () => {
     });
 
     // Action
-    await deleteReplyUseCase.execute(userId, commentId, commentId);
+    await deleteReplyUseCase.execute(userId, commentId, replyId);
 
     // Assert
     expect(mockReplyRepository.verifyReplyOwner).toBeCalledWith(replyId, userId);

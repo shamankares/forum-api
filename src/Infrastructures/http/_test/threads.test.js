@@ -1,6 +1,7 @@
 const pool = require('../../database/postgres/pool');
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const AuthenticationsTableTestHelper = require('../../../../tests/AuthenticationsTableTestHelper');
+const RepliesTableTestHelper = require('../../../../tests/RepliesTableTestHelper');
 const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
 const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
 const container = require('../../container');
@@ -12,6 +13,7 @@ describe('/threads endpoint', () => {
   });
   
   afterEach(async () => {
+    await RepliesTableTestHelper.cleanTable();
     await CommentsTableTestHelper.cleanTable();
     await ThreadsTableTestHelper.cleanTable();
     await AuthenticationsTableTestHelper.cleanTable();
@@ -170,7 +172,62 @@ describe('/threads endpoint', () => {
   });
 
   describe('when GET /threads/{threadId}', () => {
+    // TODO: Lengkapi test case
     it('should response 200 and return thread', async () => {
+      // Arrange
+      // Test Preparation
+      const server = await createServer(container);
+
+      // create a dummy user
+      await server.inject({
+        method: 'POST',
+        url: '/users',
+        payload: {
+          username: 'dicoding',
+          password: 'secret',
+          fullname: 'Dicoding Indonesia',
+        },
+      });
+
+      // get token for authentication
+      const tokenResponse = await server.inject({
+        method: 'POST',
+        url: '/authentications',
+        payload: {
+          username: 'dicoding',
+          password: 'secret',
+        },
+      });
+      const { accessToken } = JSON.parse(tokenResponse.payload).data;
+
+      // add a new thread
+      const threadResponse = await server.inject({
+        method: 'POST',
+        url: '/threads',
+        payload: {
+          title: 'Judul Thread',
+          body: 'Sebuah utasan.',
+        },
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+      const { id: threadId } = JSON.parse(threadResponse.payload).data.addedThread;
+
+      // Action
+      const response = await server.inject({
+        method: 'GET',
+        url: `/threads/${threadId}`,
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(200);
+      expect(responseJson.status).toEqual('success');
+      expect(responseJson.data.thread).toBeDefined();
+    });
+
+    it('should response 200 and return thread with comments', async () => {
       // Arrange
       // Test Preparation
       const server = await createServer(container);
@@ -240,6 +297,105 @@ describe('/threads endpoint', () => {
       expect(response.statusCode).toEqual(200);
       expect(responseJson.status).toEqual('success');
       expect(responseJson.data.thread).toBeDefined();
+      expect(responseJson.data.thread.comments).toBeDefined();
+    });
+
+    it('should response 200 and return thread with comments and replies', async () => {
+      // Arrange
+      // Test Preparation
+      const server = await createServer(container);
+
+      // create a dummy user
+      await server.inject({
+        method: 'POST',
+        url: '/users',
+        payload: {
+          username: 'dicoding',
+          password: 'secret',
+          fullname: 'Dicoding Indonesia',
+        },
+      });
+
+      // get token for authentication
+      const tokenResponse = await server.inject({
+        method: 'POST',
+        url: '/authentications',
+        payload: {
+          username: 'dicoding',
+          password: 'secret',
+        },
+      });
+      const { accessToken } = JSON.parse(tokenResponse.payload).data;
+
+      // add a new thread
+      const threadResponse = await server.inject({
+        method: 'POST',
+        url: '/threads',
+        payload: {
+          title: 'Judul Thread',
+          body: 'Sebuah utasan.',
+        },
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+      const { id: threadId } = JSON.parse(threadResponse.payload).data.addedThread;
+
+      // add dummy comments
+      const comment1Response = await server.inject({
+        method: 'POST',
+        url: `/threads/${threadId}/comments`,
+        payload: { content: 'Sebuah komentar.' },
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+      const { id: comment1Id } = JSON.parse(comment1Response.payload).data.addedComment;
+
+      const comment2Response = await server.inject({
+        method: 'POST',
+        url: `/threads/${threadId}/comments`,
+        payload: { content: 'A comment.' },
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+      const { id: comment2Id } = JSON.parse(comment2Response.payload).data.addedComment;
+
+      // add dummy replies
+      await server.inject({
+        method: 'POST',
+        url: `/threads/${threadId}/comments/${comment1Id}/replies`,
+        payload: { content: 'Sebuah balasan.' },
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+
+      await server.inject({
+        method: 'POST',
+        url: `/threads/${threadId}/comments/${comment2Id}/replies`,
+        payload: { content: 'A reply.' },
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+
+      // Action
+      const response = await server.inject({
+        method: 'GET',
+        url: `/threads/${threadId}`,
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(200);
+      expect(responseJson.status).toEqual('success');
+      expect(responseJson.data.thread).toBeDefined();
+      expect(responseJson.data.thread.comments).toBeDefined();
+      responseJson.data.thread.comments.forEach((comment) => {
+        expect(comment.replies).toBeDefined();
+      });
     });
 
     it('should response 404 when thread not found', async () => {

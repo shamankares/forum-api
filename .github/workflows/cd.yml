@@ -22,8 +22,4 @@ jobs:
             git pull origin main
             npm install
             npm run migrate up
-            
-            # Restart proses jika ada
-            # Jika tidak, buatkan proses
-            api_pid=$(pm2 pid forum-api)
-            if [ -n "${api_pid}" ]; then pm2 restart forum-api; else pm2 start npm --name "forum-api" -- run "start"; fi;
+            pm2 restart forum-api

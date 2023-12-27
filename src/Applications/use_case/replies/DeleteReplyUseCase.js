@@ -5,7 +5,7 @@ class DeleteReplyUseCase {
     this._threadRepository = threadRepository;
   }
 
-  async execute(userId,threadId, commentId, replyId) {
+  async execute(userId, threadId, commentId, replyId) {
     await this._threadRepository.getThreadById(threadId);
     await this._commentRepository.getCommentById(commentId);
     await this._replyRepository.verifyReplyOwner(replyId, userId);

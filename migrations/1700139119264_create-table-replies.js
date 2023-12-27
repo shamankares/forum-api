@@ -31,12 +31,12 @@ exports.up = (pgm) => {
   pgm.addConstraint(
     'replies',
     'fk_(replies.comment_id)_(comments.id)',
-    'FOREIGN KEY(comment_id) REFERENCES comments(id)'
+    'FOREIGN KEY(comment_id) REFERENCES comments(id)',
   );
   pgm.addConstraint(
     'replies',
     'fk_(replies.owner)_(users.id)',
-    'FOREIGN KEY(owner) REFERENCES users(id)'
+    'FOREIGN KEY(owner) REFERENCES users(id)',
   );
 };
 

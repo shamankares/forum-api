@@ -16,11 +16,6 @@ class GetThreadUseCase {
         comment.replies = await this._replyRepository.getRepliesByCommentId(comment.id);
         comment.replies.sort((a, b) => new Date(a.date) - new Date(b.date));
       }
-      
-      /* for (let index = 0; index < comments.length; index++) {
-        comments[index].replies = await this._replyRepository.getRepliesByCommentId(comments[index].id);
-        comments[index].replies.sort((a, b) => new Date(a.date) - new Date(b.date));
-      } */
     }
     const getThread = new PostedThread(thread, comments);
     return getThread;

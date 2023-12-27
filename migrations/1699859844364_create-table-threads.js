@@ -27,7 +27,7 @@ exports.up = (pgm) => {
   pgm.addConstraint(
     'threads',
     'fk_(threads.owner)_(users.id)',
-    'FOREIGN KEY(owner) REFERENCES users(id)'
+    'FOREIGN KEY(owner) REFERENCES users(id)',
   );
 };
 

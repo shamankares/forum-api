@@ -172,7 +172,6 @@ describe('/threads endpoint', () => {
   });
 
   describe('when GET /threads/{threadId}', () => {
-    // TODO: Lengkapi test case
     it('should response 200 and return thread', async () => {
       // Arrange
       // Test Preparation

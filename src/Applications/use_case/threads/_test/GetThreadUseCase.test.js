@@ -8,7 +8,6 @@ const PostedReply = require('../../../../Domains/replies/entities/PostedReply');
 
 const GetThreadUseCase = require('../GetThreadUseCase');
 
-// TODO: Modifikasi agar bisa memasang fitur reply
 describe('GetThreadUseCase', () => {
   it('should orchestrating get thread details action correctly', async () => {
     // Arrange

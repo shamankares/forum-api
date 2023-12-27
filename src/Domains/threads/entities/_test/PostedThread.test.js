@@ -49,6 +49,7 @@ describe('a PostedThread entity', () => {
     };
 
     expect(() => new PostedThread(payload, [])).toThrowError('POSTED_THREAD.NOT_MEET_DATA_TYPE_SPECIFICATION');
+    expect(() => new PostedThread(payload, {})).toThrowError('POSTED_THREAD.NOT_MEET_DATA_TYPE_SPECIFICATION');
     expect(() => new PostedThread(payloadInvalidDate, [])).toThrowError('POSTED_THREAD.NOT_MEET_DATA_TYPE_SPECIFICATION');
   });
 

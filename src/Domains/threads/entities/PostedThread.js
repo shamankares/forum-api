@@ -1,5 +1,5 @@
 class PostedThread {
-  constructor(payload, comments) {
+  constructor(payload, comments=[]) {
     const { id, username, title, body, date } = payload;
     this._verifyPayload(id, username, title, body, date, comments);
     this.id = id;

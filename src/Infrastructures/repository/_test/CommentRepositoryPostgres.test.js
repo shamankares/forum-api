@@ -197,5 +197,68 @@ describe('CommentRepositoryProgres', () => {
         expect(element).toBeInstanceOf(PostedComment);
       });
     });
+
+    it('should return an empty array if there is no comment', async () => {
+      // Arrange
+      const userId = 'user-123';
+      const threadId = 'thread-123';
+      await UsersTableTestHelper.addUser({ id: userId });
+
+      await ThreadsTableTestHelper.addThread({ id: threadId, owner: userId });
+
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+      const result = await commentRepositoryPostgres.getCommentsByThreadId(threadId);
+
+      expect(result).toBeInstanceOf(Array);
+    });
+  });
+
+  describe('getCommentById', () => {
+    it('should throw error when the comment not found', async () => {
+      // Arrange
+      const commentRepository = new CommentRepositoryPostgres(pool);
+      const commentId = 'invalidID';
+
+      // Action & Assert
+      await expect(commentRepository.getCommentById(commentId))
+        .rejects.toThrow(NotFoundError);
+    });
+
+    it('should NOT throw error when the comment is found', async () => {
+      // Arrange
+      const userId = 'user-123';
+      const threadId = 'thread-123';
+      const commentId = 'comment-123';
+      await UsersTableTestHelper.addUser({ username: userId });
+      await ThreadsTableTestHelper.addThread({ id: threadId, owner: userId });
+      await CommentsTableTestHelper.addComment({ id: commentId, threadId, owner: userId });
+
+      const commentRepository = new CommentRepositoryPostgres(pool);
+
+      // Action & Assert
+      await expect(commentRepository.getCommentById(commentId))
+        .resolves.not.toThrow(NotFoundError);
+    });
+
+    it('should return a PostedComment if found the comment', async () => {
+      // Arrange
+      const userId = 'user-123';
+      const username = 'dicoding';
+      const threadId = 'thread-123';
+      const commentId = 'comment-123';
+      const content = 'Sebuah komentar.';
+      await UsersTableTestHelper.addUser({ id: userId, username });
+
+      await ThreadsTableTestHelper.addThread({ id: threadId, owner: userId });
+      await CommentsTableTestHelper.addComment({ id: commentId, threadId, owner: userId, content });
+
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+      const result = await commentRepositoryPostgres.getCommentById(commentId);
+
+      expect(result).toBeInstanceOf(PostedComment);
+      expect(result.id).toStrictEqual(commentId);
+      expect(result.username).toStrictEqual(username);
+      expect(result.content).toStrictEqual(content);
+    });
   });
 });

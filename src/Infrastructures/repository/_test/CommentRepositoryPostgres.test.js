@@ -197,6 +197,20 @@ describe('CommentRepositoryProgres', () => {
         expect(element).toBeInstanceOf(PostedComment);
       });
     });
+
+    it('should return an empty array if there is no comment', async () => {
+      // Arrange
+      const userId = 'user-123';
+      const threadId = 'thread-123';
+      await UsersTableTestHelper.addUser({ id: userId });
+
+      await ThreadsTableTestHelper.addThread({ id: threadId, owner: userId });
+
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+      const result = await commentRepositoryPostgres.getCommentsByThreadId(threadId);
+
+      expect(result).toBeInstanceOf(Array);
+    });
   });
 
   describe('getCommentById', () => {
